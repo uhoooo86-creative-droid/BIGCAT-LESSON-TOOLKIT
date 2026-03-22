@@ -189,12 +189,16 @@ textarea::placeholder{color:var(--mut)}
 <div class="panel on" id="p-up">
   <div class="sec">계획안 입력</div>
   <div class="dz" id="dz">
-    <input type="file" id="fi" accept=".txt,.docx" onchange="onFile(event)">
+    <input type="file" id="fi" accept=".txt,.docx,.pdf" onchange="onFile(event)">
     <div class="dz-ico">📄</div>
     <div class="dz-t">파일 업로드</div>
-    <div class="dz-s">.txt 권장 · .docx 가능</div>
+    <div class="dz-s">.docx · .pdf · .txt 지원 · HWP는 아래 참고</div>
   </div>
   <div class="ust" id="ust"></div>
+  <div style="background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.2);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:11px;color:#ffd600;line-height:1.7">
+    📌 <strong>HWP 파일</strong>은 브라우저에서 읽기 불가해요<br>
+    한글 → <strong>파일 → 다른이름으로저장 → .docx 또는 .txt</strong> 로 저장 후 업로드!
+  </div>
   <div class="or">— 또는 직접 입력 —</div>
   <textarea id="pt" placeholder="수업 계획안을 붙여넣으세요&#10;&#10;예시:&#10;주제: Animals&#10;목표: cat, dog, rabbit, bird, fish 익히기&#10;문장: I have a cat. Do you have a dog?"></textarea>
   <button class="bmain" id="genbtn" onclick="doGen()">🚀 게임 + 노래 자동 생성</button>
@@ -280,47 +284,99 @@ async function readF(file){
   if(!file)return;
   const ext=file.name.split('.').pop().toLowerCase();
   const st=document.getElementById('ust');
-  st.textContent='읽는 중...';
+  st.textContent='📂 읽는 중...';
   try{
     if(ext==='txt'){
       const t=await file.text();
-      document.getElementById('pt').value=t;
-      st.textContent=`✅ 읽기 완료 (${t.length}자)`;
+      document.getElementById('pt').value=t.slice(0,4000);
+      st.textContent=`✅ TXT 읽기 완료 (${t.length}자)`;
+
     } else if(ext==='docx'){
-      // docx = zip. Extract readable Korean/English text from raw bytes
       const buf=await file.arrayBuffer();
-      const bytes=new Uint8Array(buf);
-      let out='';
-      // Scan for UTF-8 Korean (0xEA-0xED range) and ASCII text runs
-      for(let i=0;i<bytes.length;i++){
-        const b=bytes[i];
-        if(b>=0x20&&b<0x7F){
-          out+=String.fromCharCode(b);
-        } else if(b>=0xEA&&b<=0xED&&i+2<bytes.length){
-          // 3-byte UTF-8 Korean
-          const cp=((b&0xF)<<12)|((bytes[i+1]&0x3F)<<6)|(bytes[i+2]&0x3F);
-          if(cp>=0xAC00&&cp<=0xD7A3){out+=String.fromCharCode(cp);i+=2;}
-          else out+=' ';
-        } else {
-          if(out.length&&out[out.length-1]!==' ')out+=' ';
-        }
-      }
-      // Clean up: remove XML-like noise, collapse spaces
-      const clean=out
-        .replace(/[^\uAC00-\uD7A3\u3130-\u318Fa-zA-Z0-9\s.,!?:;"'()\-]/g,' ')
-        .replace(/\s+/g,' ').trim().slice(0,4000);
-      if(clean.length<20){
-        st.textContent='⚠️ DOCX 읽기 어려움 — 텍스트를 직접 붙여넣어 주세요';
+      const text=await readDocx(buf);
+      if(text.length<20){
+        st.textContent='⚠️ DOCX 내용 추출 어려움 — 텍스트 직접 붙여넣기 권장';
       } else {
-        document.getElementById('pt').value=clean;
-        st.textContent=`✅ DOCX 읽기 완료 (${clean.length}자)`;
+        document.getElementById('pt').value=text;
+        st.textContent=`✅ DOCX 읽기 완료 (${text.length}자)`;
       }
+
+    } else if(ext==='pdf'){
+      st.textContent='📄 PDF 읽는 중... (잠시 기다려요)';
+      const text=await readPDF(file);
+      if(text.length<20){
+        st.textContent='⚠️ PDF 텍스트 추출 어려움 — 텍스트 직접 붙여넣기 권장';
+      } else {
+        document.getElementById('pt').value=text;
+        st.textContent=`✅ PDF 읽기 완료 (${text.length}자)`;
+      }
+
+    } else if(ext==='hwp'||ext==='hwpx'){
+      st.textContent='⚠️ HWP는 지원 불가 — 한글에서 .docx 또는 .txt로 저장 후 업로드해주세요';
     } else {
-      st.textContent='⚠️ .txt 또는 .docx 파일만 지원해요';
+      st.textContent='⚠️ .docx / .pdf / .txt 파일만 지원해요';
     }
   }catch(e){
+    console.error(e);
     st.textContent='❌ 읽기 실패 — 텍스트로 직접 입력해주세요';
   }
+}
+
+// DOCX 읽기 (ZIP → word/document.xml 에서 텍스트 추출)
+async function readDocx(buf){
+  const bytes=new Uint8Array(buf);
+  let out='';
+  for(let i=0;i<bytes.length;i++){
+    const b=bytes[i];
+    if(b>=0x20&&b<0x7F){
+      out+=String.fromCharCode(b);
+    } else if(b>=0xEA&&b<=0xED&&i+2<bytes.length){
+      const cp=((b&0xF)<<12)|((bytes[i+1]&0x3F)<<6)|(bytes[i+2]&0x3F);
+      if(cp>=0xAC00&&cp<=0xD7A3){out+=String.fromCharCode(cp);i+=2;}
+      else out+=' ';
+    } else if(b>=0xE0&&b<=0xE9&&i+2<bytes.length){
+      const cp=((b&0xF)<<12)|((bytes[i+1]&0x3F)<<6)|(bytes[i+2]&0x3F);
+      if(cp>=0x3130&&cp<=0x318F){out+=String.fromCharCode(cp);i+=2;}
+      else out+=' ';
+    } else {
+      if(out.length&&out[out.length-1]!==' ')out+=' ';
+    }
+  }
+  // w:t 태그 사이 텍스트만 추출 (XML 노이즈 제거)
+  const wtMatches=out.match(/w:t[^>]*>([^<]{1,200})</g)||[];
+  let clean='';
+  if(wtMatches.length>0){
+    clean=wtMatches.map(m=>m.replace(/w:t[^>]*>/,'').replace(/</g,'').trim()).filter(s=>s.length>0).join(' ');
+  } else {
+    clean=out.replace(/[^\uAC00-\uD7A3\u3130-\u318Fa-zA-Z0-9\s.,!?:;"'()\-]/g,' ');
+  }
+  return clean.replace(/\s+/g,' ').trim().slice(0,4000);
+}
+
+// PDF 읽기 (pdf.js 사용)
+async function readPDF(file){
+  // pdf.js CDN 동적 로드
+  if(!window.pdfjsLib){
+    await new Promise((resolve,reject)=>{
+      const s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      s.onload=resolve;s.onerror=reject;
+      document.head.appendChild(s);
+    });
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc=
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+  const buf=await file.arrayBuffer();
+  const pdf=await window.pdfjsLib.getDocument({data:buf}).promise;
+  let text='';
+  const maxPages=Math.min(pdf.numPages,10); // 최대 10페이지
+  for(let p=1;p<=maxPages;p++){
+    const page=await pdf.getPage(p);
+    const content=await page.getTextContent();
+    const pageText=content.items.map(i=>i.str).join(' ');
+    text+=pageText+'\n';
+  }
+  return text.replace(/\s+/g,' ').trim().slice(0,4000);
 }
 
 // ── EXAMPLE ──────────────────────────────────────
