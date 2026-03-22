@@ -273,22 +273,24 @@ async function rdfile(file){
 }
 
 async function readDocx(buf){
-  // docx = ZIP containing word/document.xml
-  // We use JSZip-like manual approach: find XML text content
   try{
-    // Decompress the zip to find word/document.xml
-    const bytes=new Uint8Array(buf);
-    const str=new TextDecoder('utf-8',{fatal:false}).decode(bytes);
-    // Extract text between XML w:t tags
-    const matches=str.match(/<w:t(?:\s[^>]*)?>([^<]*)<\/w:t>/g)||[];
-    if(matches.length>0){
-      const text=matches.map(m=>m.replace(/<[^>]+>/g,'')).filter(s=>s.trim()).join(' ');
-      return text.replace(/\s+/g,' ').trim().slice(0,3000)||'내용 없음';
-    }
-    // fallback: extract printable chars
-    const readable=str.replace(/[^\x09\x0A\x0D\x20-\x7E\uAC00-\uD7A3\u3130-\u318F]/g,' ').replace(/\s+/g,' ').trim();
-    return readable.slice(0,3000)||'DOCX 내용 읽기 실패';
-  }catch(e){return '파일 내용을 읽을 수 없습니다. 텍스트로 직접 입력해주세요.'}
+    const arr = new Uint8Array(buf);
+    // Find PK entries and extract text content
+    const str = Array.from(arr).map(b => 
+      b >= 32 && b < 127 ? String.fromCharCode(b) : 
+      b > 127 ? String.fromCharCode(b) : ' '
+    ).join('');
+    const matches = str.match(/>[^<]{2,200}</g)||[];
+    const text = matches
+      .map(m => m.slice(1,-1).trim())
+      .filter(s => s.length > 1 && /[a-zA-Z가-힣]/.test(s))
+      .join(' ')
+      .replace(/\s+/g,' ')
+      .trim();
+    return text.slice(0,3000) || '내용을 읽을 수 없습니다. 텍스트로 입력해주세요.';
+  }catch(e){
+    return '파일 읽기 실패';
+  }
 }
 
 async function doGen(){
