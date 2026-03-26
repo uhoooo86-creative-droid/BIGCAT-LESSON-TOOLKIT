@@ -158,6 +158,43 @@ textarea::placeholder{color:var(--mut)}
 .dots s:nth-child(3){animation-delay:.3s}
 @keyframes dt{0%,80%,100%{transform:scale(.55);opacity:.3}40%{transform:scale(1);opacity:1}}
 @keyframes sk{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+/* PRONUNCIATION */
+.pr-card{background:#fff;border:1.5px solid var(--bdr);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(61,43,31,.07)}
+.pr-sentence{font-size:22px;font-weight:700;color:var(--txt);text-align:center;line-height:1.6;margin-bottom:16px;padding:16px;background:var(--bg2);border-radius:12px;letter-spacing:.5px}
+.pr-word{display:inline-block;padding:2px 4px;border-radius:4px;transition:all .3s}
+.pr-word.ok{background:rgba(76,175,125,.15);color:#2d7a56}
+.pr-word.no{background:rgba(232,83,74,.15);color:var(--red);text-decoration:underline wavy var(--red)}
+.pr-word.skip{color:var(--mut)}
+.pr-mic{width:80px;height:80px;border-radius:50%;border:none;font-size:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;transition:all .2s;box-shadow:0 4px 14px rgba(0,0,0,.1)}
+.pr-mic.idle{background:linear-gradient(135deg,#fff,var(--bg2));border:2px solid var(--bdr)}
+.pr-mic.rec{background:linear-gradient(135deg,var(--red),var(--acc));animation:prPulse 1s infinite;box-shadow:0 4px 20px rgba(232,83,74,.4)}
+@keyframes prPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.pr-status{text-align:center;font-size:13px;color:var(--mut);margin-bottom:14px;min-height:20px;font-weight:500}
+.pr-transcript{background:var(--bg2);border:1.5px solid var(--bdr);border-radius:10px;padding:12px 14px;font-size:14px;color:var(--txt);min-height:44px;margin-bottom:12px;line-height:1.6}
+.pr-transcript .label{font-size:10px;color:var(--mut);font-family:'Space Mono',monospace;margin-bottom:4px}
+.pr-score-bar{height:10px;background:var(--bg3);border-radius:5px;overflow:hidden;margin:10px 0}
+.pr-score-fill{height:100%;border-radius:5px;transition:width .8s cubic-bezier(.34,1.56,.64,1)}
+.pr-score-num{font-family:'Black Han Sans',sans-serif;font-size:36px;text-align:center;margin:8px 0 4px}
+.pr-score-label{text-align:center;font-size:13px;font-weight:700;margin-bottom:14px}
+.pr-feedback{background:var(--bg2);border-radius:10px;padding:12px;font-size:13px;line-height:1.8;margin-bottom:14px;border-left:3px solid var(--acc)}
+.pr-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pr-btn{padding:12px;border-radius:10px;border:1.5px solid;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.pr-btn.listen{border-color:var(--acc3);color:var(--acc3);background:rgba(91,155,213,.07)}
+.pr-btn.listen:hover{background:rgba(91,155,213,.15)}
+.pr-btn.retry{border-color:var(--acc);color:var(--acc);background:rgba(232,83,74,.07)}
+.pr-btn.retry:hover{background:rgba(232,83,74,.15)}
+.pr-btn.next{grid-column:1/-1;background:linear-gradient(135deg,var(--grn),var(--acc3));border-color:transparent;color:#fff}
+.pr-phoneme{display:inline-flex;flex-direction:column;align-items:center;margin:4px;padding:6px 10px;border-radius:8px;font-size:12px;font-weight:700}
+.pr-phoneme.ok{background:rgba(76,175,125,.12);color:#2d7a56}
+.pr-phoneme.no{background:rgba(232,83,74,.1);color:var(--red)}
+.pr-hist-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg2);border-radius:8px;margin-bottom:6px;font-size:12px}
+.pr-hist-score{font-family:'Black Han Sans',sans-serif;font-size:16px}
+.pr-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.pr-nav-btn{padding:6px 14px;border-radius:8px;border:1.5px solid var(--bdr);background:#fff;color:var(--txt);font-size:12px;cursor:pointer;transition:all .2s}
+.pr-nav-btn:hover{border-color:var(--acc);color:var(--acc)}
+.pr-nav-info{font-size:12px;color:var(--mut);font-family:'Space Mono',monospace}
+.waveform{height:40px;display:flex;align-items:center;justify-content:center;gap:2px;margin:8px 0}
+.wbar{width:3px;border-radius:2px;background:var(--acc);transition:height .1s}
 </style>
 </head>
 <body>
@@ -177,7 +214,8 @@ textarea::placeholder{color:var(--mut)}
   <button class="tb on"  onclick="gp('up',0)"><span class="ic">📂</span>계획안</button>
   <button class="tb off" id="tg" onclick="gp('gm',1)"><span class="ic">🎮</span>게임</button>
   <button class="tb off" id="ty" onclick="gp('yt',2)"><span class="ic">▶️</span>YouTube</button>
-  <button class="tb off" id="tl" onclick="gp('ly',3)"><span class="ic">🎤</span>AI작사</button>
+  <button class="tb off" id="tp" onclick="gp('pr',3)"><span class="ic">🎤</span>발음연습</button>
+  <button class="tb off" id="tl" onclick="gp('ly',4)"><span class="ic">🎵</span>AI작사</button>
 </div>
 
 <!-- UPLOAD -->
@@ -227,6 +265,24 @@ textarea::placeholder{color:var(--mut)}
   <div id="ytcs"></div>
 </div>
 
+<!-- PRONUNCIATION -->
+<div class="panel" id="p-pr">
+
+  <!-- 오늘의 문장 -->
+  <div class="sec">발음 연습</div>
+  <div class="pr-card" id="prCard">
+    <div class="pr-empty">
+      <div style="font-size:36px;margin-bottom:8px">🎤</div>
+      <p style="font-size:13px;color:var(--mut)">계획안에서 게임을 먼저 생성하면<br>문장이 자동으로 나타나요!</p>
+      <button class="bsec" style="margin-top:12px;width:auto;padding:8px 20px" onclick="gp('up',0)">← 계획안으로</button>
+    </div>
+  </div>
+
+  <!-- 점수 기록 -->
+  <div class="sec" style="margin-top:14px">오늘 점수 기록</div>
+  <div id="prHistory" style="font-size:12px;color:var(--mut);text-align:center;padding:10px">아직 기록 없어요. 연습해봐요! 💪</div>
+</div>
+
 <!-- LYRICS -->
 <div class="panel" id="p-ly">
   <div class="sec">AI 가사 생성</div>
@@ -267,8 +323,9 @@ function gp(n,i){
   ts.forEach((t,j)=>t.classList.toggle('on',j===i));
   ps.forEach(p=>p.classList.remove('on'));
   document.getElementById('p-'+n).classList.add('on');
+  if(n==='pr')initPronun();
 }
-function unlock(){['tg','ty','tl'].forEach(id=>document.getElementById(id).classList.remove('off'))}
+function unlock(){['tg','ty','tp','tl'].forEach(id=>document.getElementById(id).classList.remove('off'))}
 
 // ── FILE READ ─────────────────────────────────────
 function onFile(e){readF(e.target.files[0])}
@@ -810,6 +867,280 @@ async function doLyrics(){
 function cply(){if(window._lyr)navigator.clipboard.writeText(window._lyr).then(()=>toast('복사됨! 📋','gd'))}
 
 document.addEventListener('DOMContentLoaded',()=>loadYT());
+// ═══════════════════════════════════════════════
+// 🎤 PRONUNCIATION PRACTICE ENGINE
+// ═══════════════════════════════════════════════
+const PR = {
+  sentences: [],   // 연습할 문장 목록
+  idx: 0,          // 현재 문장 인덱스
+  rec: false,      // 녹음 중
+  recognition: null,
+  transcript: '',
+  history: [],     // [{sentence, score, transcript}]
+  waveTimer: null
+};
+
+function initPronun(){
+  // 문장 소스: sentences + words로 만든 문장
+  const sents = S.sentences.length ? [...S.sentences] : [];
+  S.words.forEach(w => sents.push(`I have a ${w}.`));
+  // 중복 제거
+  PR.sentences = [...new Set(sents)].slice(0,20);
+  if(PR.sentences.length === 0){
+    document.getElementById('prCard').innerHTML = `
+      <div class="pr-empty" style="text-align:center;padding:24px">
+        <div style="font-size:36px;margin-bottom:8px">🎤</div>
+        <p style="font-size:13px;color:var(--mut)">계획안에서 게임을 먼저 생성하면<br>문장이 자동으로 나타나요!</p>
+        <button class="bsec" style="margin-top:12px;width:auto;padding:8px 20px" onclick="gp('up',0)">← 계획안으로</button>
+      </div>`;
+    return;
+  }
+  PR.idx = 0;
+  renderPronunCard();
+}
+
+function renderPronunCard(){
+  const sent = PR.sentences[PR.idx];
+  const card = document.getElementById('prCard');
+  card.innerHTML = `
+    <div class="pr-nav">
+      <button class="pr-nav-btn" onclick="prPrev()">← 이전</button>
+      <span class="pr-nav-info">${PR.idx+1} / ${PR.sentences.length}</span>
+      <button class="pr-nav-btn" onclick="prNext()">다음 →</button>
+    </div>
+    <div class="pr-sentence" id="prSentDisp">${sent}</div>
+    <div class="waveform" id="waveform">${Array(12).fill(0).map((_,i)=>`<div class="wbar" id="wb${i}" style="height:4px;opacity:.3"></div>`).join('')}</div>
+    <button class="pr-mic idle" id="prMic" onclick="toggleRec()">🎤</button>
+    <div class="pr-status" id="prStatus">버튼을 눌러 말해보세요!</div>
+    <div style="margin-bottom:10px">
+      <div class="pr-transcript"><div class="label">내가 말한 것</div><span id="prTranscript" style="color:var(--mut)">—</span></div>
+    </div>
+    <div id="prResult"></div>
+    <div class="pr-btns">
+      <button class="pr-btn listen" onclick="spkSentence('${esc(sent)}')">🔊 원어민 발음</button>
+      <button class="pr-btn retry" onclick="renderPronunCard()">🔄 다시 시도</button>
+    </div>`;
+}
+
+function prPrev(){PR.idx=Math.max(0,PR.idx-1);renderPronunCard()}
+function prNext(){PR.idx=Math.min(PR.sentences.length-1,PR.idx+1);renderPronunCard()}
+
+// 문장 전체 TTS
+function spkSentence(sent){
+  if(!window.speechSynthesis)return;
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(sent);
+  u.lang='en-US';u.rate=0.78;u.pitch=1.05;
+  const voices=window.speechSynthesis.getVoices();
+  const pref=['Samantha','Karen','Google US English','en-US'];
+  for(const p of pref){
+    const v=voices.find(v=>v.name.includes(p)||v.lang==='en-US');
+    if(v){u.voice=v;break;}
+  }
+  sfx('tap');
+  window.speechSynthesis.speak(u);
+}
+
+// 파형 애니메이션
+function startWave(){
+  PR.waveTimer=setInterval(()=>{
+    for(let i=0;i<12;i++){
+      const el=document.getElementById('wb'+i);
+      if(el){const h=PR.rec?8+Math.random()*28:4;el.style.height=h+'px';el.style.opacity=PR.rec?'1':'.3';}
+    }
+  },80);
+}
+function stopWave(){
+  clearInterval(PR.waveTimer);
+  for(let i=0;i<12;i++){const el=document.getElementById('wb'+i);if(el){el.style.height='4px';el.style.opacity='.3';}}
+}
+
+// 녹음 토글
+function toggleRec(){
+  if(PR.rec){stopRec();return;}
+  startRec();
+}
+
+function startRec(){
+  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SpeechRecognition){
+    toast('이 브라우저는 음성인식을 지원하지 않아요 😢','bd');
+    return;
+  }
+  PR.rec=true;
+  PR.transcript='';
+  const mic=document.getElementById('prMic');
+  const status=document.getElementById('prStatus');
+  if(mic)mic.className='pr-mic rec';
+  if(mic)mic.textContent='⏹';
+  if(status)status.textContent='🔴 듣고 있어요... 말해보세요!';
+  document.getElementById('prTranscript').textContent='듣는 중...';
+  startWave();
+  haptic('tap');
+
+  const r=new SpeechRecognition();
+  r.lang='en-US';
+  r.continuous=false;
+  r.interimResults=true;
+  r.maxAlternatives=3;
+  PR.recognition=r;
+
+  r.onresult=(e)=>{
+    let interim='';let final='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal)final+=e.results[i][0].transcript;
+      else interim+=e.results[i][0].transcript;
+    }
+    const el=document.getElementById('prTranscript');
+    if(el)el.textContent=final||interim||'...';
+    if(final)PR.transcript=final.trim();
+  };
+  r.onend=()=>{
+    PR.rec=false;
+    stopWave();
+    const mic=document.getElementById('prMic');
+    if(mic){mic.className='pr-mic idle';mic.textContent='🎤';}
+    if(PR.transcript)scorePronun(PR.transcript);
+    else{
+      const s=document.getElementById('prStatus');
+      if(s)s.textContent='인식 실패 😢 다시 눌러보세요';
+    }
+  };
+  r.onerror=(e)=>{
+    PR.rec=false;stopWave();
+    const mic=document.getElementById('prMic');
+    if(mic){mic.className='pr-mic idle';mic.textContent='🎤';}
+    const s=document.getElementById('prStatus');
+    if(s)s.textContent='오류: '+e.error+' — 마이크 권한을 확인해주세요';
+  };
+  r.start();
+}
+
+function stopRec(){
+  if(PR.recognition)PR.recognition.stop();
+  PR.rec=false;stopWave();
+}
+
+// 발음 채점 + Claude AI 피드백
+async function scorePronun(transcript){
+  const target=PR.sentences[PR.idx];
+  const tWords=target.toLowerCase().replace(/[^a-z\s]/g,'').split(/\s+/).filter(Boolean);
+  const sWords=transcript.toLowerCase().replace(/[^a-z\s]/g,'').split(/\s+/).filter(Boolean);
+
+  // 단어별 매칭
+  let matched=0;
+  const wordResults=tWords.map(tw=>{
+    const found=sWords.some(sw=>sw===tw||levenshtein(sw,tw)<=1);
+    if(found)matched++;
+    return{word:tw,ok:found};
+  });
+
+  const accuracy=Math.round((matched/tWords.length)*100);
+  const sentSim=strSimilarity(target.toLowerCase(),transcript.toLowerCase());
+  const score=Math.round(accuracy*.7+sentSim*100*.3);
+
+  let grade,color,emoji;
+  if(score>=90){grade='PERFECT!';color='#4CAF7D';emoji='🌟';}
+  else if(score>=75){grade='GREAT!';color='#5B9BD5';emoji='👍';}
+  else if(score>=60){grade='GOOD!';color='#F4874B';emoji='😊';}
+  else if(score>=40){grade='ALMOST!';color='#F5C842';emoji='💪';}
+  else{grade='TRY AGAIN!';color='#E8534A';emoji='🔄';}
+
+  const highlighted=wordResults.map(w=>
+    `<span class="pr-word ${w.ok?'ok':'no'}">${w.word}</span>`
+  ).join(' ');
+
+  const wrong=wordResults.filter(w=>!w.ok).map(w=>w.word);
+
+  // 결과 먼저 보여주기 (AI 피드백은 로딩 중 표시)
+  const status=document.getElementById('prStatus');
+  if(status)status.textContent='채점 완료!';
+  document.getElementById('prTranscript').textContent=transcript;
+  document.getElementById('prSentDisp').innerHTML=highlighted;
+
+  document.getElementById('prResult').innerHTML=`
+    <div class="pr-score-num" style="color:${color}">${score}</div>
+    <div class="pr-score-label" style="color:${color}">${emoji} ${grade}</div>
+    <div class="pr-score-bar"><div class="pr-score-fill" style="width:${score}%;background:${color}"></div></div>
+    <div class="pr-feedback" id="prFeedback">
+      <span style="color:var(--mut);font-size:12px">🤖 AI 피드백 생성 중<span class="dots"><s></s><s></s><s></s></span></span>
+    </div>
+    <div class="pr-btns" style="margin-top:10px">
+      <button class="pr-btn listen" onclick="spkSentence('${esc(target)}')">🔊 다시 듣기</button>
+      <button class="pr-btn retry" onclick="renderPronunCard()">🎤 다시 말하기</button>
+      ${score>=60?`<button class="pr-btn next" onclick="prNext()">다음 문장 →</button>`:''}
+    </div>`;
+
+  // 효과음 + 햅틱
+  if(score>=75){sfx('correct');haptic('correct');}
+  else if(score>=50){sfx('tap');}
+  else{sfx('wrong');haptic('wrong');}
+
+  // Claude AI 피드백 (비동기)
+  try{
+    const aiFeedback=await callAI(
+      `You are a friendly English pronunciation coach for Korean children (ages 5-10). 
+Give SHORT, KIND, ACTIONABLE feedback in Korean.
+Rules:
+- Max 3 lines
+- Use simple Korean words
+- Be encouraging, never discouraging  
+- Give 1 specific tip for the hardest wrong word
+- End with a cheerful emoji`,
+      `Target sentence: "${target}"
+What the child said: "${transcript}"
+Score: ${score}/100
+Wrong words: ${wrong.length?wrong.join(', '):'없음 (거의 완벽!)'}
+Correct words: ${wordResults.filter(w=>w.ok).map(w=>w.word).join(', ')}`,
+      200
+    );
+    const fb=document.getElementById('prFeedback');
+    if(fb)fb.innerHTML=aiFeedback.replace(/\n/g,'<br>');
+  }catch(e){
+    // fallback to simple feedback
+    const fb=document.getElementById('prFeedback');
+    if(fb)fb.innerHTML=buildFeedback(wrong,score);
+  }
+
+  PR.history.unshift({sentence:target,score,transcript,grade,emoji});
+  renderPrHistory();
+}
+
+function buildFeedback(wrong,score){
+  if(score>=90)return '완벽해요! 발음이 아주 정확해요 🎉';
+  if(wrong.length===0)return '거의 완벽해요! 조금 더 자신있게 말해봐요 💪';
+  const tips={r:'R 발음: 혀를 입천장에 닿지 않게 말아요 🌀',l:'L 발음: 혀 끝을 윗니 뒤에 살짝 대요 👅',th:'TH 발음: 혀를 이 사이에 살짝 내밀어요 😛',v:'V 발음: 윗니로 아랫입술을 살짝 물어요 😬',f:'F 발음: 바람처럼 후~ 소리 내요 💨'};
+  let fb=`틀린 단어: <strong style="color:var(--red)">${wrong.join(', ')}</strong><br>`;
+  for(const[k,v] of Object.entries(tips)){if(wrong.some(w=>w.includes(k))){fb+=`• ${v}<br>`;break;}}
+  return fb+(score<50?'천천히 한 단어씩 해봐요! 💪':'조금만 더! 잘 하고 있어요 😊');
+}
+
+function renderPrHistory(){
+  const el=document.getElementById('prHistory');
+  if(!PR.history.length){el.textContent='아직 기록 없어요. 연습해봐요! 💪';return;}
+  el.innerHTML=PR.history.slice(0,8).map(h=>`
+    <div class="pr-hist-item">
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--txt)">${h.sentence}</span>
+      <span class="pr-hist-score" style="color:${h.score>=75?'var(--grn)':h.score>=50?'var(--org)':'var(--red)'};margin-left:8px">${h.emoji}${h.score}</span>
+    </div>`).join('');
+}
+
+// 레벤슈타인 거리 (오타 허용)
+function levenshtein(a,b){
+  const m=a.length,n=b.length;
+  const dp=Array.from({length:m+1},(_,i)=>Array.from({length:n+1},(_,j)=>i===0?j:j===0?i:0));
+  for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)
+    dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
+  return dp[m][n];
+}
+
+// 문자열 유사도 (0~1)
+function strSimilarity(a,b){
+  const longer=a.length>b.length?a:b;
+  const shorter=a.length>b.length?b:a;
+  if(!longer.length)return 1;
+  return(longer.length-levenshtein(longer,shorter))/longer.length;
+}
 </script>
 </body>
 </html>
